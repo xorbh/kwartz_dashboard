@@ -269,29 +269,65 @@ export function HtmlWidget({ widgetId, name, onEdit }: HtmlWidgetProps) {
     }
   };
 
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const fullscreenContent = (
+    <div className="fullscreen-widget-content">
+      {renderContent()}
+    </div>
+  );
+
   return (
-    <div className="html-widget">
-      <div className="widget-header">
-        <span className="widget-title">{name}</span>
-        <span className="widget-content-type">{contentType}</span>
-        {onEdit && (
-          <button className="widget-edit" onClick={onEdit} title="Edit widget">
-            ⚙
+    <>
+      <div className="html-widget">
+        <div className="widget-header">
+          <span className="widget-title">{name}</span>
+          <span className="widget-content-type">{contentType}</span>
+          <button
+            className="widget-fullscreen"
+            onClick={() => setIsFullscreen(true)}
+            title="Fullscreen"
+          >
+            ⛶
           </button>
+          {onEdit && (
+            <button className="widget-edit" onClick={onEdit} title="Edit widget">
+              ⚙
+            </button>
+          )}
+        </div>
+        {loading ? (
+          <div className="widget-loading">Loading...</div>
+        ) : error ? (
+          <div className="widget-error">
+            <span className="error-icon">⚠</span>
+            <span className="error-message">{error}</span>
+          </div>
+        ) : (
+          <div className="widget-content">
+            {renderContent()}
+          </div>
         )}
       </div>
-      {loading ? (
-        <div className="widget-loading">Loading...</div>
-      ) : error ? (
-        <div className="widget-error">
-          <span className="error-icon">⚠</span>
-          <span className="error-message">{error}</span>
-        </div>
-      ) : (
-        <div className="widget-content">
-          {renderContent()}
+
+      {isFullscreen && (
+        <div className="fullscreen-overlay" onClick={() => setIsFullscreen(false)}>
+          <div className="fullscreen-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="fullscreen-header">
+              <span className="fullscreen-title">{name}</span>
+              <span className="widget-content-type">{contentType}</span>
+              <button
+                className="fullscreen-close"
+                onClick={() => setIsFullscreen(false)}
+                title="Close"
+              >
+                ×
+              </button>
+            </div>
+            {fullscreenContent}
+          </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

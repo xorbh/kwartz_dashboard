@@ -187,6 +187,7 @@
   margin-left: auto;
 }
 
+.widget-fullscreen,
 .widget-edit {
   background: none;
   border: none;
@@ -198,6 +199,7 @@
   transition: all 0.15s ease;
 }
 
+.widget-fullscreen:hover,
 .widget-edit:hover {
   background: var(--color-bg-secondary);
   color: var(--color-text-primary);
@@ -811,4 +813,96 @@
 
 .react-grid-item:hover > .react-resizable-handle::after {
   border-color: var(--color-accent);
+}
+
+/* Fullscreen Widget Modal */
+.fullscreen-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 200;
+  padding: 24px;
+}
+
+.fullscreen-modal {
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-xl);
+  width: 100%;
+  height: 100%;
+  max-width: calc(100vw - 48px);
+  max-height: calc(100vh - 48px);
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-xl);
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+}
+
+.fullscreen-header {
+  display: flex;
+  align-items: center;
+  padding: 16px 20px;
+  background: var(--color-bg-tertiary);
+  border-bottom: 1px solid var(--color-border);
+  gap: 12px;
+}
+
+.fullscreen-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.fullscreen-header .widget-content-type {
+  margin-left: 0;
+}
+
+.fullscreen-close {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: 28px;
+  cursor: pointer;
+  padding: 4px 8px;
+  line-height: 1;
+  border-radius: var(--radius-sm);
+  transition: all 0.15s ease;
+}
+
+.fullscreen-close:hover {
+  color: var(--color-text-primary);
+  background: var(--color-bg-secondary);
+}
+
+.fullscreen-widget-content {
+  flex: 1;
+  overflow: auto;
+  background: var(--color-bg-secondary);
+}
+
+.fullscreen-widget-content .markdown-content {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 32px 40px;
+}
+
+.fullscreen-widget-content .csv-table-container {
+  padding: 24px;
+}
+
+.fullscreen-widget-content .image-content {
+  padding: 32px;
+}
+
+.fullscreen-widget-content .widget-iframe {
+  width: 100%;
+  height: 100%;
 }

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { fetchWidgetContent } from '../api/widgets';
@@ -310,7 +311,7 @@ export function HtmlWidget({ widgetId, name, onEdit }: HtmlWidgetProps) {
         )}
       </div>
 
-      {isFullscreen && (
+      {isFullscreen && createPortal(
         <div className="fullscreen-overlay" onClick={() => setIsFullscreen(false)}>
           <div className="fullscreen-modal" onClick={(e) => e.stopPropagation()}>
             <div className="fullscreen-header">
@@ -326,7 +327,8 @@ export function HtmlWidget({ widgetId, name, onEdit }: HtmlWidgetProps) {
             </div>
             {fullscreenContent}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );

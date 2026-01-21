@@ -160,6 +160,7 @@ async def get_widget_content(widget_id: str, db: Session = Depends(get_db)):
     return WidgetContentResponse(
         id=widget.id,
         name=widget.name,
+        content_url=widget.content_url,
         html_content=html_content,
         error=error,
     )

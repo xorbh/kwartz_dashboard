@@ -64,6 +64,7 @@ class BulkLayoutUpdate(BaseModel):
 class WidgetContentResponse(BaseModel):
     id: str
     name: str
+    content_url: str | None = None
     html_content: str | None = None
     error: str | None = None
 

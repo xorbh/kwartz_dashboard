@@ -50,6 +50,7 @@ export interface WidgetUpdate {
 export interface WidgetContent {
   id: string;
   name: string;
+  content_url: string | null;
   html_content: string | null;
   error: string | null;
 }

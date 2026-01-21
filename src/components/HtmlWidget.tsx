@@ -9,19 +9,31 @@ interface HtmlWidgetProps {
   onEdit?: () => void;
 }
 
-type ContentType = 'html' | 'markdown' | 'csv' | 'unknown';
+type ContentType = 'html' | 'markdown' | 'csv' | 'image' | 'unknown';
+
+const IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.bmp', '.ico'];
+
+function isImageUrl(url: string): boolean {
+  const lowerUrl = url.toLowerCase().split('?')[0]; // Remove query params
+  return IMAGE_EXTENSIONS.some(ext => lowerUrl.endsWith(ext));
+}
 
 function detectContentType(content: string, url?: string): ContentType {
   // Check URL extension first
   if (url) {
-    const lowerUrl = url.toLowerCase();
-    if (lowerUrl.includes('.md') || lowerUrl.includes('.markdown')) {
+    const lowerUrl = url.toLowerCase().split('?')[0]; // Remove query params for extension check
+
+    // Check for image extensions
+    if (IMAGE_EXTENSIONS.some(ext => lowerUrl.endsWith(ext))) {
+      return 'image';
+    }
+    if (lowerUrl.endsWith('.md') || lowerUrl.endsWith('.markdown')) {
       return 'markdown';
     }
-    if (lowerUrl.includes('.csv')) {
+    if (lowerUrl.endsWith('.csv')) {
       return 'csv';
     }
-    if (lowerUrl.includes('.html') || lowerUrl.includes('.htm')) {
+    if (lowerUrl.endsWith('.html') || lowerUrl.endsWith('.htm')) {
       return 'html';
     }
   }
@@ -136,6 +148,29 @@ function MarkdownContent({ content }: { content: string }) {
   );
 }
 
+function ImageContent({ url, name }: { url: string; name: string }) {
+  const [imageError, setImageError] = useState(false);
+
+  if (imageError) {
+    return (
+      <div className="widget-error">
+        <span className="error-icon">⚠</span>
+        <span className="error-message">Failed to load image</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="image-content">
+      <img
+        src={url}
+        alt={name}
+        onError={() => setImageError(true)}
+      />
+    </div>
+  );
+}
+
 function HtmlContent({ content, name }: { content: string; name: string }) {
   const [iframeRef, setIframeRef] = useState<HTMLIFrameElement | null>(null);
 
@@ -162,6 +197,7 @@ function HtmlContent({ content, name }: { content: string; name: string }) {
 
 export function HtmlWidget({ widgetId, name, onEdit }: HtmlWidgetProps) {
   const [content, setContent] = useState<string | null>(null);
+  const [contentUrl, setContentUrl] = useState<string | null>(null);
   const [contentType, setContentType] = useState<ContentType>('unknown');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -180,19 +216,31 @@ export function HtmlWidget({ widgetId, name, onEdit }: HtmlWidgetProps) {
         if (result.error) {
           setError(result.error);
           setContent(null);
-        } else if (result.html_content) {
-          setContent(result.html_content);
-          const detected = detectContentType(result.html_content);
-          setContentType(detected);
-          setError(null);
+          setContentUrl(null);
         } else {
-          setError('No content received');
-          setContent(null);
+          // Check if URL points to an image - if so, don't need html_content
+          if (result.content_url && isImageUrl(result.content_url)) {
+            setContentUrl(result.content_url);
+            setContentType('image');
+            setContent(null);
+            setError(null);
+          } else if (result.html_content) {
+            setContent(result.html_content);
+            setContentUrl(result.content_url);
+            const detected = detectContentType(result.html_content, result.content_url || undefined);
+            setContentType(detected);
+            setError(null);
+          } else {
+            setError('No content received');
+            setContent(null);
+            setContentUrl(null);
+          }
         }
       } catch (err) {
         if (cancelled) return;
         setError(err instanceof Error ? err.message : 'Failed to load content');
         setContent(null);
+        setContentUrl(null);
       } finally {
         if (!cancelled) {
           setLoading(false);
@@ -208,16 +256,16 @@ export function HtmlWidget({ widgetId, name, onEdit }: HtmlWidgetProps) {
   }, [widgetId]);
 
   const renderContent = () => {
-    if (!content) return null;
-
     switch (contentType) {
+      case 'image':
+        return contentUrl ? <ImageContent url={contentUrl} name={name} /> : null;
       case 'csv':
-        return <CSVTable data={parseCSV(content)} />;
+        return content ? <CSVTable data={parseCSV(content)} /> : null;
       case 'markdown':
-        return <MarkdownContent content={content} />;
+        return content ? <MarkdownContent content={content} /> : null;
       case 'html':
       default:
-        return <HtmlContent content={content} name={name} />;
+        return content ? <HtmlContent content={content} name={name} /> : null;
     }
   };
 

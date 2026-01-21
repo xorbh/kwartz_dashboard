@@ -60,5 +60,3 @@ backend/.encryption_key
 *.sqlite
 *.sqlite3
 
-# Claude
-.claude/

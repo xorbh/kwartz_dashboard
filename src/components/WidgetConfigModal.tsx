@@ -164,7 +164,7 @@ export function WidgetConfigModal({ widget, onSave, onClose }: WidgetConfigModal
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content modal-content-wide" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-content modal-split" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2>{isEditing ? 'Edit Widget' : 'Add Widget'}</h2>
           <button className="modal-close" onClick={onClose}>
@@ -172,94 +172,152 @@ export function WidgetConfigModal({ widget, onSave, onClose }: WidgetConfigModal
           </button>
         </div>
 
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="name">Widget Name</label>
-            <input
-              id="name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Customer Report"
-              required
-            />
-          </div>
-
-          <div className="form-section">
-            <div className="form-section-title">API Configuration</div>
-
+        <div className="modal-body-split">
+          {/* Left side - Form */}
+          <form className="modal-form-panel" onSubmit={handleSubmit}>
             <div className="form-group">
-              <label htmlFor="apiEndpoint">API Endpoint</label>
+              <label htmlFor="name">Widget Name</label>
               <input
-                id="apiEndpoint"
-                type="url"
-                value={apiEndpoint}
-                onChange={(e) => setApiEndpoint(e.target.value)}
-                placeholder="http://localhost:8006/api/external/reports/run"
+                id="name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Customer Report"
                 required
               />
             </div>
 
-            <div className="form-row">
+            <div className="form-section">
+              <div className="form-section-title">API Configuration</div>
+
               <div className="form-group">
-                <label htmlFor="apiKeyHeader">API Key Header</label>
+                <label htmlFor="apiEndpoint">API Endpoint</label>
                 <input
-                  id="apiKeyHeader"
+                  id="apiEndpoint"
+                  type="url"
+                  value={apiEndpoint}
+                  onChange={(e) => setApiEndpoint(e.target.value)}
+                  placeholder="http://localhost:8006/api/external/reports/run"
+                  required
+                />
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="apiKeyHeader">Header</label>
+                  <input
+                    id="apiKeyHeader"
+                    type="text"
+                    value={apiKeyHeader}
+                    onChange={(e) => setApiKeyHeader(e.target.value)}
+                    placeholder="X-API-Key"
+                    style={{ width: '120px' }}
+                  />
+                </div>
+                <div className="form-group form-group-grow">
+                  <label htmlFor="apiKey">
+                    API Key
+                    {isEditing && widget?.api_key_masked && (
+                      <span className="label-hint"> ({widget.api_key_masked})</span>
+                    )}
+                  </label>
+                  <input
+                    id="apiKey"
+                    type="password"
+                    value={apiKey}
+                    onChange={(e) => setApiKey(e.target.value)}
+                    placeholder={isEditing ? 'Leave blank to keep current' : 'kwz_...'}
+                  />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="reportId">Report ID</label>
+                <input
+                  id="reportId"
                   type="text"
-                  value={apiKeyHeader}
-                  onChange={(e) => setApiKeyHeader(e.target.value)}
-                  placeholder="X-API-Key"
+                  value={reportId}
+                  onChange={(e) => setReportId(e.target.value)}
+                  placeholder="agent_customerreport_20260112_102503"
                 />
-              </div>
-              <div className="form-group form-group-grow">
-                <label htmlFor="apiKey">
-                  API Key
-                  {isEditing && widget?.api_key_masked && (
-                    <span className="label-hint"> (current: {widget.api_key_masked})</span>
-                  )}
-                </label>
-                <input
-                  id="apiKey"
-                  type="password"
-                  value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
-                  placeholder={isEditing ? 'Leave blank to keep current' : 'kwz_...'}
-                />
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="reportId">Report ID</label>
-              <input
-                id="reportId"
-                type="text"
-                value={reportId}
-                onChange={(e) => setReportId(e.target.value)}
-                placeholder="agent_customerreport_20260112_102503"
-              />
-              <span className="field-hint">
-                Will be sent as POST body: {`{"report_id": "${reportId || '...'}"}`}
-              </span>
-            </div>
-          </div>
-
-          <div className="form-section">
-            <div className="form-section-title">Response Configuration</div>
-
-            <div className="form-group">
-              <div className="test-api-row">
-                <button
-                  type="button"
-                  className="btn-secondary btn-small"
-                  onClick={handleTestApi}
-                  disabled={testing || !apiEndpoint}
-                >
-                  {testing ? 'Testing...' : 'Test API'}
-                </button>
                 <span className="field-hint">
-                  Test the API to see the response structure
+                  POST body: {`{"report_id": "${reportId || '...'}"}`}
                 </span>
               </div>
+
+              <button
+                type="button"
+                className="btn-primary btn-small"
+                onClick={handleTestApi}
+                disabled={testing || !apiEndpoint}
+                style={{ width: '100%', marginTop: '8px' }}
+              >
+                {testing ? 'Testing...' : 'Test API'}
+              </button>
+            </div>
+
+            <div className="form-section">
+              <div className="form-section-title">Response Path</div>
+
+              <div className="form-group">
+                <label htmlFor="responseUrlPath">URL Path</label>
+                <input
+                  id="responseUrlPath"
+                  type="text"
+                  value={responseUrlPath}
+                  onChange={(e) => setResponseUrlPath(e.target.value)}
+                  placeholder="data.signed_url"
+                  required
+                />
+                <span className="field-hint">
+                  Click a key or URL in the response to set this
+                </span>
+              </div>
+
+              {contentUrl && (
+                <div className="form-group">
+                  <label>Captured URL</label>
+                  <div className="content-url-display">
+                    {contentUrl.length > 50 ? contentUrl.substring(0, 50) + '...' : contentUrl}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="modal-actions">
+              <button type="button" className="btn-secondary" onClick={onClose}>
+                Cancel
+              </button>
+              <button type="submit" className="btn-primary" disabled={saving}>
+                {saving ? 'Saving...' : isEditing ? 'Save Changes' : 'Add Widget'}
+              </button>
+            </div>
+          </form>
+
+          {/* Right side - API Response */}
+          <div className="modal-response-panel">
+            <div className="response-panel-header">
+              <span>API Response</span>
+              {testResult && (
+                <span className="response-status success">OK</span>
+              )}
+              {testError && (
+                <span className="response-status error">Error</span>
+              )}
+            </div>
+            <div className="response-panel-content">
+              {!testResult && !testError && !testing && (
+                <div className="response-empty">
+                  <span className="response-empty-icon">↙</span>
+                  <span>Click "Test API" to see the response</span>
+                </div>
+              )}
+
+              {testing && (
+                <div className="response-empty">
+                  <span>Testing...</span>
+                </div>
+              )}
 
               {testError && (
                 <div className="test-error">
@@ -268,54 +326,16 @@ export function WidgetConfigModal({ widget, onSave, onClose }: WidgetConfigModal
               )}
 
               {testResult && (
-                <div className="test-result">
-                  <div className="test-result-header">
-                    <span>API Response (click a key or URL to use as path):</span>
-                  </div>
-                  <div className="json-viewer-container">
-                    <JsonViewer
-                      data={JSON.parse(testResult)}
-                      onPathClick={handlePathClick}
-                    />
-                  </div>
+                <div className="json-viewer-container">
+                  <JsonViewer
+                    data={JSON.parse(testResult)}
+                    onPathClick={handlePathClick}
+                  />
                 </div>
               )}
             </div>
-
-            <div className="form-group">
-              <label htmlFor="responseUrlPath">Response URL Path</label>
-              <input
-                id="responseUrlPath"
-                type="text"
-                value={responseUrlPath}
-                onChange={(e) => setResponseUrlPath(e.target.value)}
-                placeholder="data.signed_url"
-                required
-              />
-              <span className="field-hint">
-                JSON path to extract the signed URL from the response
-              </span>
-            </div>
-
-            {contentUrl && (
-              <div className="form-group">
-                <label>Content URL (captured)</label>
-                <div className="content-url-display">
-                  {contentUrl.length > 60 ? contentUrl.substring(0, 60) + '...' : contentUrl}
-                </div>
-              </div>
-            )}
           </div>
-
-          <div className="modal-actions">
-            <button type="button" className="btn-secondary" onClick={onClose}>
-              Cancel
-            </button>
-            <button type="submit" className="btn-primary" disabled={saving}>
-              {saving ? 'Saving...' : isEditing ? 'Save Changes' : 'Add Widget'}
-            </button>
-          </div>
-        </form>
+        </div>
       </div>
     </div>
   );
